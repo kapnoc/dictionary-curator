@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block 'contents' %}
+
+<ul>
+    {% for entry in curated %}
+    <li><b>{{entry.fr}}</b>: {{entry.vo}} ({{entry.word_type.name}}) ; {{entry.notes}} ; (version: {{entry.version}} ;
+        multiples mots: {{entry.multiple_words}})</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

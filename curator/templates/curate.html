@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block 'contents' %}
+
+
+{% load materializecss %}
+
+
+<h5>{{base.fr}}: {{base.vo}}</h5>
+
+<form action="{% url 'curator:delete_first_base' %}" method="post">
+    {% csrf_token %}
+    <input class="btn" type="submit" value="Delete base entry">
+</form>
+
+<br />
+<hr />
+<br />
+
+<h6>Curated:</h6>
+<form action="{% url 'curator:index' %}" method="post">
+    {% csrf_token %}
+    {{ curated_form|materializecss }}
+
+    <input class="btn" type="submit" value="Add entry">
+</form>
+
+<br />
+<hr />
+<br />
+
+<h6>Word Type:</h6>
+<form action="{% url 'curator:word_type' %}" method="post">
+    {% csrf_token %}
+    {{ word_type_form|materializecss }}
+    <input class="btn" type="submit" value="Add word type">
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems);
+    });
+</script>
+
+{% endblock %}
