@@ -1,16 +1,34 @@
 from django.shortcuts import render, reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms import modelformset_factory
+from django.core.paginator import Paginator
 
 from .models import BaseEntry, CuratedEntry
 from .forms import CuratedEntryForm, WordTypeForm
 
 
-def display_curated(request):
-    curated = CuratedEntry.objects.all()[:]
-    print(curated)
+def curated(request):
+    curated_formset = None
+    CuratedEntryFormset = modelformset_factory(CuratedEntry, exclude=())
+    if request.method == 'POST':
+        curated_formset = CuratedEntryFormset(request.POST)
+        if curated_formset.is_valid():
+            curated_formset.save()
+            return HttpResponseRedirect(reverse('curator:curated'))
+        else:
+            # go back to normal display, with errors in curated_display
+            pass
+    curated = CuratedEntry.objects.all().order_by('-pk')
+    paginator = Paginator(curated, 5)
+    page = request.GET.get('page', 1)
+    if curated_formset is None:
+        curated_formset = CuratedEntryFormset(
+            queryset=paginator.page(page).object_list)
     context = {
-        'curated': curated,
+        'curated': curated_formset,
+        'page_range': paginator.page_range,
+        'curr_page': int(page),
     }
     return render(request, 'display_curated.html', context)
 
@@ -30,6 +48,7 @@ def word_type(request):
 
 
 def index(request):
+    curated_form = None
     if request.method == 'POST':
         form = CuratedEntryForm(request.POST)
         if form.is_valid():
@@ -38,18 +57,11 @@ def index(request):
             # BaseEntry.objects.first().delete()
             return HttpResponseRedirect(reverse('curator:index'))
         else:
-            base = BaseEntry.objects.first()
             curated_form = form
-            word_type_form = WordTypeForm()
-            context = {
-                'base': base,
-                'curated_form': curated_form,
-                'word_type_form': word_type_form,
-            }
-            return render(request, 'curate.html', context)
-
+            # go back to normal display, with errors in curated_form
     base = BaseEntry.objects.first()
-    curated_form = CuratedEntryForm()
+    if curated_form is None:
+        curated_form = CuratedEntryForm()
     word_type_form = WordTypeForm()
     context = {
         'base': base,

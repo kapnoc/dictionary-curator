@@ -2,11 +2,45 @@
 
 {% block 'contents' %}
 
-<ul>
-    {% for entry in curated %}
-    <li><b>{{entry.fr}}</b>: {{entry.vo}} ({{entry.word_type.name}}) ; {{entry.notes}} ; (version: {{entry.version}} ;
-        multiples mots: {{entry.multiple_words}})</li>
+{% load materializecss %}
+
+<ul class="pagination">
+    {% for page in page_range %}
+    {% if page == curr_page %}
+    <li class="active"><a href="{% url 'curator:curated' %}?page={{ page }}">{{ page }}</a></li>
+    {% else %}
+    <li class="waves-effect"><a href="{% url 'curator:curated' %}?page={{ page }}">{{ page }}</a></li>
+    {% endif %}
     {% endfor %}
 </ul>
+
+<form action="{% url 'curator:curated' %}" method="post">
+    {% csrf_token %}
+    {{ curated.management_form }}
+    <div class="row center-align">
+        <div class="col s12"><button type="submit" class="btn">Update</button></div>
+        <div class="col s12">
+            {{ curated.errors }}
+        </div>
+    </div>
+    {% for entry in curated %}
+    <hr />
+    <div class="row">
+        {% for hidden in entry.hidden_fields %}
+        {{ hidden }}
+        {% endfor %}
+        {% for field in entry.visible_fields %}
+        <div class="col">{{ field|materializecss }}</div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems);
+    });
+</script>
 
 {% endblock %}
